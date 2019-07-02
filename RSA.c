@@ -1,7 +1,7 @@
 #include <gmp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "headers/keys.h"
+#include "RSA.h"
 
 mpz_t e;
 
@@ -21,7 +21,7 @@ void random_prime(int bits, mpz_t destination) {
   } while(mpz_probab_prime_p(destination, 50) < 1); 
 }
 
-void generate_keys(int bits, RSA_key public_key, RSA_key private_key) {
+void RSA_generate_keys(int bits, RSA_key public_key, RSA_key private_key) {
   mpz_t p,q; // Secret prime numbers.
   mpz_t ctf; // Carmichael's totient function λ(n).
   mpz_t gcd;
@@ -49,10 +49,7 @@ void generate_keys(int bits, RSA_key public_key, RSA_key private_key) {
   mpz_abs(private_key, private_key);
 }
 
-int main() {
+void RSA_init() {
   mpz_init(e);
   mpz_set_si(e, 65537);
-  RSA_key private_key, public_key; 
-  generate_keys(2048, public_key, private_key);
-  gmp_printf("Public:\t%Zx\nPrivate:\t%Zx\n", public_key, private_key);
 }
