@@ -1,6 +1,10 @@
 #include <gmp.h>
 #include <stdio.h>
+#ifdef __linux__
+#include <bsd/stdlib.h>
+#elif defined __APPLE__
 #include <stdlib.h>
+#endif
 #include <string.h>
 #include "RSA.h"
 
