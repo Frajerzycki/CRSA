@@ -20,10 +20,10 @@ int main(int argc, char *argv[]) {
   RSA_decrypt(ciphertext, decrypted_message, encrypted_bytes, &encrypted_bytes,
   public_key, private_key); printf("%s\n", decrypted_message);
   gmp_printf("Public:\t%Zx\nPrivate:\t%Zx\n", public_key, private_key);*/
-  uint8_t* hash = SHA256(argv[1], strlen(argv[1]));
+  uint8_t *hash = SHA256(argv[1], strlen(argv[1]));
   for (int i = 0; i < 32; i++)
     printf("%02x", hash[i]);
-  printf("\n"); 
+  printf("\n");
   free(hash);
   return 0;
 }
