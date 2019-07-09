@@ -2,7 +2,7 @@
 #include <stdio.h>
 #ifdef __linux__
 #include <bsd/stdlib.h>
-#elif defined __APPLE__
+#else
 #include <stdlib.h>
 #endif
 #include "RSA.h"
