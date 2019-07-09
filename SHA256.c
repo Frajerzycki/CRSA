@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #define RIGHTROTATE32(n, b) ((n >> b) | (n << (32 - b)))
-#define BSWAP32(x) (((x & 0xff000000) >> 24) | ((x & 0x00ff0000) >> 8) | ((x & 0x0000ff00) << 8) | (x << 24))
+
+
 const static uint32_t K[] = {
       0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
       0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -36,31 +38,22 @@ uint8_t *SHA256(void *data, size_t size) {
   k >>= 3;
 
   size_t byte_length = bit_length >> 3;
-  uint8_t *bytes = malloc(byte_length);
-  memcpy(bytes, data, size);
-  bytes += size;
-  bytes[0] = 0x80;
-  bytes++;
-  memset(bytes, 0, k);
-  bytes += k;
-  size <<= 3;
-  bytes[7] = size & 0xFF;
-  bytes[6] = (size >> 8) & 0xFF;
-  bytes[5] = (size >> 16) & 0xFF;
-  bytes[4] = (size >> 24) & 0xFF;
-  bytes[3] = (size >> 32) & 0xFF;
-  bytes[2] = (size >> 40) & 0xFF;
-  bytes[1] = (size >> 48) & 0xFF;
-  bytes[0] = (size >> 56) & 0xFF;
-  bytes -= byte_length - 8;
+  uint8_t bytes[byte_length];
   size_t bytes_index = 0;
-
+  memcpy(bytes, data, size);
+  bytes_index += size;
+  bytes[bytes_index] = 0x80;
+  bytes_index++;
+  memset(&bytes[bytes_index], 0, k);
+  bytes_index += k;
+  size <<= 3;
+  size = __builtin_bswap64(size);
+  memcpy(&bytes[bytes_index], &size, 8);
+  bytes_index = 0;
   while (bytes_index < byte_length) {
     uint32_t w[64];
-    for (uint8_t i = 0; i < 16; i++, bytes_index += 4) {
-      w[i] = (bytes[bytes_index] << 24) | (bytes[bytes_index + 1] << 16) |
-             (bytes[bytes_index + 2] << 8) | bytes[bytes_index + 3];
-    }
+    for (uint8_t i = 0; i < 16; i++, bytes_index += 4)
+      w[i] = __builtin_bswap32(*((uint32_t*)&bytes[bytes_index]));
     for (uint8_t i = 16; i < 64; i++) {
       uint32_t wim15 = w[i - 15];
       uint32_t s0 =
@@ -106,13 +99,7 @@ uint8_t *SHA256(void *data, size_t size) {
     hash[6] += g;
     hash[7] += h;
   }
-  hash[0] = BSWAP32(hash[0]);
-  hash[1] = BSWAP32(hash[1]);
-  hash[2] = BSWAP32(hash[2]);
-  hash[3] = BSWAP32(hash[3]);
-  hash[4] = BSWAP32(hash[4]);
-  hash[5] = BSWAP32(hash[5]);
-  hash[6] = BSWAP32(hash[6]);
-  hash[7] = BSWAP32(hash[7]);
+  for (uint8_t i = 0; i < 8; i++)
+    hash[i] = __builtin_bswap32(hash[i]);
   return (uint8_t *)hash;
 }
