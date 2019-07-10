@@ -1,4 +1,5 @@
 #include "RSA.h"
+#include "MGF1.h"
 #include "SHA256.h"
 #include <gmp.h>
 #include <stdio.h>
@@ -20,10 +21,13 @@ int main(int argc, char *argv[]) {
   RSA_decrypt(ciphertext, decrypted_message, encrypted_bytes, &encrypted_bytes,
   public_key, private_key); printf("%s\n", decrypted_message);
   gmp_printf("Public:\t%Zx\nPrivate:\t%Zx\n", public_key, private_key);*/
-  uint8_t *hash = SHA256(argv[1], strlen(argv[1]));
-  for (int i = 0; i < 32; i++)
-    printf("%02x", hash[i]);
+  if (argc < 3)
+    return 0;
+  uint32_t size = atoi(argv[2]);
+  uint8_t *mask = MGF1_SHA256(argv[1], strlen(argv[1]),size);
+  for (int i = 0; i < size; i++)
+    printf("%02x", mask[i]);
   printf("\n");
-  free(hash);
+  free(mask);
   return 0;
 }
